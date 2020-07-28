@@ -128,7 +128,7 @@ int main() {
 
 	CNFGBGColor = 0x400000;
 	CNFGDialogColor = 0x444444;
-	CNFGSetupFullscreen("Test Bench", 0);
+	CNFGSetup("Test Bench", 0, 0);
 
 	const char *assettext = "Not Found";
 	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "asset.txt", AASSET_MODE_BUFFER);
