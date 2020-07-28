@@ -131,14 +131,17 @@ int main() {
 	CNFGSetup("Test Bench", 0, 0);
 
 	const char *assettext = "Not Found";
-	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "asset.txt", AASSET_MODE_BUFFER);
-	if (file) {
-		size_t fileLength = AAsset_getLength(file);
-		char *temp = malloc(fileLength + 1);
-		memcpy(temp, AAsset_getBuffer(file), fileLength);
-		temp[fileLength] = 0;
-		assettext = temp;
+	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.png", AASSET_MODE_BUFFER);
+	if(file == NULL) {
+		printf("Error: icon.png didn't load!");
+		return 1;
 	}
+	
+	size_t fileLength = AAsset_getLength(file);
+	char *temp = malloc(fileLength + 1);
+	memcpy(temp, AAsset_getBuffer(file), fileLength);
+	temp[fileLength] = 0;
+	assettext = temp;
 
 	while (1) {
 		int i, pos;
@@ -224,6 +227,4 @@ int main() {
 			LastFPSTime += 1;
 		}
 	}
-
-	return (0);
 }
