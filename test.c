@@ -19,6 +19,8 @@
 #define CNFG_IMPLEMENTATION
 #include "CNFG.h"
 
+#include "spng/spng.h"
+
 unsigned frames = 0;
 unsigned long iframeno = 0;
 
@@ -130,7 +132,6 @@ int main() {
 	CNFGDialogColor = 0x444444;
 	CNFGSetup("Test Bench", 0, 0);
 
-	const char *assettext = "Not Found";
 	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.png", AASSET_MODE_BUFFER);
 	if(file == NULL) {
 		printf("Error: icon.png didn't load!");
@@ -138,10 +139,8 @@ int main() {
 	}
 	
 	size_t fileLength = AAsset_getLength(file);
-	char *temp = malloc(fileLength + 1);
-	memcpy(temp, AAsset_getBuffer(file), fileLength);
-	temp[fileLength] = 0;
-	assettext = temp;
+	uint32_t *iconAsset = malloc(fileLength * sizeof(uint32_t));
+	memcpy(iconAsset, AAsset_getBuffer(file), fileLength);
 
 	while (1) {
 		int i, pos;
@@ -162,9 +161,9 @@ int main() {
 
 		// Mesh in background
 		CNFGColor(0xffffff);
-		CNFGPenX = 20;
-		CNFGPenY = 20;
-		CNFGDrawText(assettext, 10);
+		UpdateScreenWithBitmapOffsetX = 500;
+		UpdateScreenWithBitmapOffsetY = 500;
+		CNFGUpdateScreenWithBitmap(iconAsset, 144, 144);
 		CNFGFlushRender();
 
 		CNFGPenX = 0;
@@ -181,37 +180,8 @@ int main() {
 		CNFGPenX = 10;
 		CNFGPenY = 10;
 
-		// Text
 		pos = 0;
 		CNFGColor(0xffffff);
-		for (i = 0; i < 1; i++) {
-			int c;
-			char tw[2] = {0, 0};
-			for (c = 0; c < 256; c++) {
-				tw[0] = c;
-
-				CNFGPenX = (c % 16) * 20 + 606;
-				CNFGPenY = (c / 16) * 20 + 5;
-				CNFGDrawText(tw, 4);
-			}
-		}
-
-		// Green triangles
-		CNFGPenX = 0;
-		CNFGPenY = 0;
-
-		for (i = 0; i < 400; i++) {
-			RDPoint pp[3];
-			CNFGColor(0x00FF00);
-			pp[0].x = (short) (50 * sin((float) (i + iframeno) * .01) + (i % 20) * 30);
-			pp[0].y = (short) (50 * cos((float) (i + iframeno) * .01) + (i / 20) * 20);
-			pp[1].x = (short) (20 * sin((float) (i + iframeno) * .01) + (i % 20) * 30);
-			pp[1].y = (short) (50 * cos((float) (i + iframeno) * .01) + (i / 20) * 20);
-			pp[2].x = (short) (10 * sin((float) (i + iframeno) * .01) + (i % 20) * 30);
-			pp[2].y = (short) (30 * cos((float) (i + iframeno) * .01) + (i / 20) * 20);
-			CNFGTackPoly(pp, 3);
-		}
-
 		CNFGPenX = 5;
 		CNFGPenY = 600;
 		CNFGDrawText(genlog, 4);
