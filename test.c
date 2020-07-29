@@ -133,14 +133,33 @@ int main() {
 	CNFGSetup("Test Bench", 0, 0);
 
 	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.png", AASSET_MODE_BUFFER);
-	if(file == NULL) {
-		printf("Error: icon.png didn't load!");
-		return 1;
-	}
-	
+
 	size_t fileLength = AAsset_getLength(file);
-	uint32_t *iconAsset = malloc(fileLength * sizeof(uint32_t));
-	memcpy(iconAsset, AAsset_getBuffer(file), fileLength);
+	unsigned char * buffer = malloc(fileLength);
+	memcpy(buffer, AAsset_getBuffer(file), fileLength);
+
+	AAsset_close(file);
+
+	spng_ctx *ctx = spng_ctx_new(0);
+
+	spng_set_png_buffer(ctx, buffer, fileLength);
+
+	size_t outSize;
+	spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &outSize);
+	printf("outsize %d\n", outSize);
+
+    struct spng_ihdr ihdr;
+    spng_get_ihdr(ctx, &ihdr);
+    uint32_t imageWidth = ihdr.width;
+    uint32_t imageHeight = ihdr.height;
+
+	printf("width %d, height %d\n", imageWidth, imageHeight);
+/*
+	unsigned char * image = malloc(outSize);
+	int r = spng_decode_image(ctx, image, outSize, SPNG_FMT_RGBA8, 0);
+*/
+	free(buffer);
+	spng_ctx_free(ctx);
 
 	while (1) {
 		int i, pos;
@@ -161,10 +180,10 @@ int main() {
 
 		// Mesh in background
 		CNFGColor(0xffffff);
-		UpdateScreenWithBitmapOffsetX = 500;
+		/*UpdateScreenWithBitmapOffsetX = 500;
 		UpdateScreenWithBitmapOffsetY = 500;
-		CNFGUpdateScreenWithBitmap(iconAsset, 144, 144);
-		CNFGFlushRender();
+		CNFGUpdateScreenWithBitmap(image, imageWidth, imageHeight);
+		CNFGFlushRender();*/
 
 		CNFGPenX = 0;
 		CNFGPenY = 480;
