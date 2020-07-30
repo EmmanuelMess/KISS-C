@@ -165,7 +165,6 @@ int main() {
 	int linesegs = 0;
 
 	CNFGBGColor = 0x400000;
-	CNFGDialogColor = 0x444444;
 	CNFGSetup("Test Bench", 0, 0);
 
 	struct Image imageIcon = load("icon.png");
@@ -188,37 +187,19 @@ int main() {
 		CNFGColor(0xFFFFFF);
 		CNFGGetDimensions(&screenx, &screeny);
 
-		CNFGColor(0xffffff);
 		UpdateScreenWithBitmapOffsetX = 0;
 		UpdateScreenWithBitmapOffsetY = 0;
 		CNFGUpdateScreenWithBitmap(imageBackground.pixels, imageBackground.width, imageBackground.height);
 
 		//Green circle
-		CNFGColor(0xffffff);
 		UpdateScreenWithBitmapOffsetX = 500;
 		UpdateScreenWithBitmapOffsetY = 500;
 		CNFGUpdateScreenWithBitmap(imageIcon.pixels, imageIcon.width, imageIcon.height);
 		CNFGFlushRender();
 
-		CNFGPenX = 0;
-		CNFGPenY = 480;
-		char st[50];
-		sprintf(st, "%dx%d %d %d %d %d %d %d\n%d %d", screenx, screeny, lastbuttonx, lastbuttony, lastmotionx,
-		        lastmotiony, lastkey, lastkeydown, lastbid, lastmask);
-		CNFGDrawText(st, 10);
-		glLineWidth(2.0);
-
 		// Square behind text
-		CNFGDrawBox(600, 0, 950, 350);
-
-		CNFGPenX = 10;
-		CNFGPenY = 10;
-
-		pos = 0;
-		CNFGColor(0xffffff);
-		CNFGPenX = 5;
-		CNFGPenY = 600;
-		CNFGDrawText(genlog, 4);
+		CNFGDialogColor = 0x000000;
+		CNFGDrawBox(0, screeny-96, screenx, screeny);
 
 		frames++;
 		CNFGSwapBuffers();
