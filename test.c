@@ -19,6 +19,8 @@
 #define CNFG_IMPLEMENTATION
 #include "CNFG.h"
 
+#include "spng/spng.h"
+
 unsigned frames = 0;
 unsigned long iframeno = 0;
 
@@ -132,13 +134,23 @@ struct Image load(const char * name) {
 	unsigned char * buffer = malloc(fileLength);
 	memcpy(buffer, AAsset_getBuffer(file), fileLength);
 
-	image.width = *((uint32_t*) buffer);
-	buffer += sizeof(u_int32_t);
-	image.height = *((uint32_t*) buffer);
-	buffer += sizeof(u_int32_t);
+    spng_ctx * ctx = spng_ctx_new(0);
+    spng_set_png_buffer(ctx, buffer, fileLength);
 
-	image.pixels = buffer;
+    size_t outSize;
+    spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &outSize);
 
+    struct spng_ihdr ihdr;
+    spng_get_ihdr(ctx, &ihdr);
+    image.width = ihdr.width;
+    image.height = ihdr.height;
+
+    unsigned char * pixels = malloc(outSize);
+    spng_decode_image(ctx, pixels, outSize, SPNG_FMT_RGBA8, 0);
+
+    image.pixels = pixels;
+
+    spng_ctx_free(ctx);
 	AAsset_close(file);
 
 	return image;
@@ -156,8 +168,8 @@ int main() {
 	CNFGDialogColor = 0x444444;
 	CNFGSetup("Test Bench", 0, 0);
 
-	struct Image imageIcon = load("icon.explicit4ch8b");
-	struct Image imageBackground = load("background.explicit4ch8b");
+	struct Image imageIcon = load("icon.png");
+	struct Image imageBackground = load("background.png");
 
 	while (1) {
 		int i, pos;
