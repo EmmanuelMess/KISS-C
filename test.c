@@ -118,6 +118,32 @@ void HandleResume() {
 	suspended = 0;
 }
 
+struct Image {
+	unsigned char * pixels;
+	uint32_t width, height;
+};
+
+struct Image load(const char * name) {
+	struct Image image;
+
+	AAsset *file = AAssetManager_open(gapp->activity->assetManager, name, AASSET_MODE_BUFFER);
+
+	size_t fileLength = AAsset_getLength(file);
+	unsigned char * buffer = malloc(fileLength);
+	memcpy(buffer, AAsset_getBuffer(file), fileLength);
+
+	image.width = *((uint32_t*) buffer);
+	buffer += sizeof(u_int32_t);
+	image.height = *((uint32_t*) buffer);
+	buffer += sizeof(u_int32_t);
+
+	image.pixels = buffer;
+
+	AAsset_close(file);
+
+	return image;
+}
+
 int main() {
 	int i, x, y;
 	double ThisTime;
@@ -130,19 +156,8 @@ int main() {
 	CNFGDialogColor = 0x444444;
 	CNFGSetup("Test Bench", 0, 0);
 
-	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.explicit4ch8b", AASSET_MODE_BUFFER);
-
-	size_t fileLength = AAsset_getLength(file);
-	unsigned char * buffer = malloc(fileLength);
-	memcpy(buffer, AAsset_getBuffer(file), fileLength);
-
-	uint32_t imageWidth = *((uint32_t*) buffer);
-	buffer += sizeof(u_int32_t);
-	uint32_t imageHeight = *((uint32_t*) buffer);
-	buffer += sizeof(u_int32_t);
-
-	AAsset_close(file);
-
+	struct Image imageIcon = load("icon.explicit4ch8b");
+	struct Image imageBackground = load("background.explicit4ch8b");
 
 	while (1) {
 		int i, pos;
@@ -161,11 +176,16 @@ int main() {
 		CNFGColor(0xFFFFFF);
 		CNFGGetDimensions(&screenx, &screeny);
 
-		// Mesh in background
+		CNFGColor(0xffffff);
+		UpdateScreenWithBitmapOffsetX = 0;
+		UpdateScreenWithBitmapOffsetY = 0;
+		CNFGUpdateScreenWithBitmap(imageBackground.pixels, imageBackground.width, imageBackground.height);
+
+		//Green circle
 		CNFGColor(0xffffff);
 		UpdateScreenWithBitmapOffsetX = 500;
 		UpdateScreenWithBitmapOffsetY = 500;
-		CNFGUpdateScreenWithBitmap(buffer, imageWidth, imageHeight);
+		CNFGUpdateScreenWithBitmap(imageIcon.pixels, imageIcon.width, imageIcon.height);
 		CNFGFlushRender();
 
 		CNFGPenX = 0;
