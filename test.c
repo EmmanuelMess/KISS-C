@@ -19,8 +19,6 @@
 #define CNFG_IMPLEMENTATION
 #include "CNFG.h"
 
-#include "spng/spng.h"
-
 unsigned frames = 0;
 unsigned long iframeno = 0;
 
@@ -132,34 +130,19 @@ int main() {
 	CNFGDialogColor = 0x444444;
 	CNFGSetup("Test Bench", 0, 0);
 
-	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.png", AASSET_MODE_BUFFER);
+	AAsset *file = AAssetManager_open(gapp->activity->assetManager, "icon.explicit4ch8b", AASSET_MODE_BUFFER);
 
 	size_t fileLength = AAsset_getLength(file);
 	unsigned char * buffer = malloc(fileLength);
 	memcpy(buffer, AAsset_getBuffer(file), fileLength);
 
+	uint32_t imageWidth = *((uint32_t*) buffer);
+	buffer += sizeof(u_int32_t);
+	uint32_t imageHeight = *((uint32_t*) buffer);
+	buffer += sizeof(u_int32_t);
+
 	AAsset_close(file);
 
-	spng_ctx *ctx = spng_ctx_new(0);
-
-	spng_set_png_buffer(ctx, buffer, fileLength);
-
-	size_t outSize;
-	spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &outSize);
-	printf("outsize %d\n", outSize);
-
-    struct spng_ihdr ihdr;
-    spng_get_ihdr(ctx, &ihdr);
-    uint32_t imageWidth = ihdr.width;
-    uint32_t imageHeight = ihdr.height;
-
-	printf("width %d, height %d\n", imageWidth, imageHeight);
-/*
-	unsigned char * image = malloc(outSize);
-	int r = spng_decode_image(ctx, image, outSize, SPNG_FMT_RGBA8, 0);
-*/
-	free(buffer);
-	spng_ctx_free(ctx);
 
 	while (1) {
 		int i, pos;
@@ -180,10 +163,10 @@ int main() {
 
 		// Mesh in background
 		CNFGColor(0xffffff);
-		/*UpdateScreenWithBitmapOffsetX = 500;
+		UpdateScreenWithBitmapOffsetX = 500;
 		UpdateScreenWithBitmapOffsetY = 500;
-		CNFGUpdateScreenWithBitmap(image, imageWidth, imageHeight);
-		CNFGFlushRender();*/
+		CNFGUpdateScreenWithBitmap(buffer, imageWidth, imageHeight);
+		CNFGFlushRender();
 
 		CNFGPenX = 0;
 		CNFGPenY = 480;
