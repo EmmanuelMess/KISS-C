@@ -2,7 +2,7 @@
 APPNAME=kissc
 RAWDRAWANDROID=rawdrawandroid
 CFLAGS:=-I. -ffunction-sections -Os -fvisibility=hidden -DRDALOGFNCB=example_log_function
-LDFLAGS:=-s -lm
+LDFLAGS:=-s -lz -lm
 PACKAGENAME?=com.emmanuelmess.$(APPNAME)
 SRC:=test.c
 
