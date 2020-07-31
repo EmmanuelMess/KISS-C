@@ -9,14 +9,14 @@
 #include <stdio.h>
 #include <math.h>
 
-#define ZLIB_CONST
+#define SPNG_USE_MINIZ
 
 #ifdef __FRAMAC__
     #define SPNG_DISABLE_OPT
     #include "tests/framac_stubs.h"
 #else
     #ifdef SPNG_USE_MINIZ
-        #include <miniz.h>
+        #include "miniz/miniz.h"
     #else
         #include <zlib.h>
     #endif
@@ -901,8 +901,9 @@ static int read_scanline_bytes(spng_ctx *ctx, unsigned char *dest, size_t len)
 
     while(zstream->avail_out != 0)
     {
+    	printf("sfsdfsdfsdfsdfsdfsdfsd");
         ret = inflate(&ctx->zstream, 0);
-
+		printf("qewrwrwrwrqrqwrw");
         if(ret == Z_OK) continue;
 
         if(ret == Z_STREAM_END) /* Reached an end-marker */

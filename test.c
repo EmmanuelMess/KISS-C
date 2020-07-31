@@ -154,10 +154,10 @@ int main() {
     uint32_t imageHeight = ihdr.height;
 
 	printf("width %d, height %d\n", imageWidth, imageHeight);
-/*
+
 	unsigned char * image = malloc(outSize);
 	int r = spng_decode_image(ctx, image, outSize, SPNG_FMT_RGBA8, 0);
-*/
+
 	free(buffer);
 	spng_ctx_free(ctx);
 
