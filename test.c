@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 #include "os_generic.h"
 #include <GLES3/gl3.h>
 #include <asset_manager.h>
@@ -84,20 +85,32 @@ int lastbid = 0;
 int lastmask = 0;
 int lastkey, lastkeydown;
 
-static int keyboard_up;
+static bool keyboard_up;
 
 void HandleKey( int keycode, int bDown ) {
 	lastkey = keycode;
 	lastkeydown = bDown;
-	if (keycode == 4) {
-		AndroidSendToBack(1);
+	if(keyboard_up) {
+		keyboard_up = false;
+	} else if (keycode == 4) {
+		AndroidSendToBack(1); //Handle Physical Back Button.
 	}
 }
 
-void HandleButton( int x, int y, int button, int bDown ) {
+int textBoxStartX = -1;
+int textBoxEndX = -1;
+int textBoxStartY = -1;
+int textBoxEndY = -1;
+
+void HandleButton(int x, int y, int button, int bDown) {
 	lastbid = button;
 	lastbuttonx = x;
 	lastbuttony = y;
+
+	if(bDown && (textBoxStartX <= x && x <= textBoxEndX) && (textBoxStartY <= y && y <= textBoxEndY)) {
+		keyboard_up = true;
+		AndroidDisplayKeyboard(true);
+	}
 }
 
 void HandleMotion( int x, int y, int mask ) {
@@ -178,8 +191,6 @@ int main() {
 	struct Image imageBackground = load("background.png");
 
 	while (1) {
-		keyboard_up = 1;
-
 		int i, pos;
 		float f;
 		iframeno++;
@@ -200,10 +211,12 @@ int main() {
 		UpdateScreenWithBitmapOffsetY = 0;
 		CNFGUpdateScreenWithBitmap(imageBackground.pixels, imageBackground.width, imageBackground.height);
 
-		const int textBoxStartX = 20;
-		const int textBoxEndX = screenx-20;
-		const int textBoxStartY = screeny-120-100;
-		const int textBoxEndY = screeny-20-100;
+		int keyboardHeight = keyboard_up? 500 : 0;
+
+		textBoxStartX = 20;
+		textBoxEndX = screenx-20;
+		textBoxStartY = screeny-120-100 - keyboardHeight;
+		textBoxEndY = screeny-20-100 - keyboardHeight;
 
 		// Square behind text
 		CNFGDialogColor = 0xFFFFFF;
@@ -217,8 +230,8 @@ int main() {
 
 		if(((int)OGGetAbsoluteTime()) % 2 == 0) {
 			// Text input line
-			CNFGDialogColor = 0xAAAAAA;
-			CNFGDrawBox(textBoxStartX + 10 + 100 + 10, textBoxStartY + 20 , textBoxStartX + 10 + 100 + 10 + 2, textBoxEndY - 20);
+			CNFGDialogColor = 0x000000;
+			CNFGDrawBox(textBoxStartX + 10 + 100 + 10, textBoxStartY + 20, textBoxStartX + 10 + 100 + 10 + 2, textBoxEndY - 20);
 		}
 
 		frames++;
