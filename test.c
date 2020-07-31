@@ -87,20 +87,37 @@ int lastkey, lastkeydown;
 
 static bool keyboard_up;
 
-void HandleKey( int keycode, int bDown ) {
-	lastkey = keycode;
-	lastkeydown = bDown;
-	if(keyboard_up) {
-		keyboard_up = false;
-	} else if (keycode == 4) {
-		AndroidSendToBack(1); //Handle Physical Back Button.
-	}
-}
-
 int textBoxStartX = -1;
 int textBoxEndX = -1;
 int textBoxStartY = -1;
 int textBoxEndY = -1;
+char text[15] = "text\0";
+
+void HandleKey( int keycode, int bDown ) {
+	lastkey = keycode;
+	lastkeydown = bDown;
+
+	if(bDown) {
+		int len = strlen(text);
+		if(keycode == 67) {
+			text[len-1] = '\0';
+		} else if(('0' <= keycode && keycode <= '9')
+					|| ('a' <= keycode && keycode <= 'z')
+					|| ('A' <= keycode && keycode <= 'Z')) {
+			if(len < 15) {
+				text[len] = keycode;
+				text[len+1] = '\0';
+			}
+		}
+	}
+
+	if(keycode == 10 && !bDown) {
+		keyboard_up = false;
+		AndroidDisplayKeyboard(keyboard_up);
+	} else if (keycode == 4) {
+		AndroidSendToBack(1); //Handle Physical Back Button.
+	}
+}
 
 void HandleButton(int x, int y, int button, int bDown) {
 	lastbid = button;
@@ -205,6 +222,7 @@ int main() {
 
 		CNFGClearFrame();
 		CNFGColor(0xFFFFFF);
+		glLineWidth(1.0);
 		CNFGGetDimensions(&screenx, &screeny);
 
 		UpdateScreenWithBitmapOffsetX = 0;
@@ -228,11 +246,25 @@ int main() {
 		CNFGUpdateScreenWithBitmap(imageIcon.pixels, imageIcon.width, imageIcon.height);
 		CNFGFlushRender();
 
+		const int TEXT_SCALE = 10;
+		const int TEXT_WIDTH = 3 * TEXT_SCALE;
+
 		if(((int)OGGetAbsoluteTime()) % 2 == 0) {
 			// Text input line
 			CNFGDialogColor = 0x000000;
-			CNFGDrawBox(textBoxStartX + 10 + 100 + 10, textBoxStartY + 20, textBoxStartX + 10 + 100 + 10 + 2, textBoxEndY - 20);
+			int len = strlen(text);
+			CNFGDrawBox(textBoxStartX + 10 + 100 + 10 + len * TEXT_WIDTH, textBoxStartY + 20,
+				textBoxStartX + 10 + 100 + 10 + 2 + len * TEXT_WIDTH, textBoxEndY - 20);
+			CNFGFlushRender();
 		}
+
+		//Inputted text
+		glLineWidth(5.0);
+		CNFGPenX = textBoxStartX  + 10 + 100 + 10;
+		CNFGPenY = textBoxStartY + 20;
+		CNFGColor(0x000000);
+		CNFGDrawText(text, TEXT_SCALE);
+		CNFGFlushRender();
 
 		frames++;
 		CNFGSwapBuffers();
