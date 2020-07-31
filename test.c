@@ -121,7 +121,7 @@ void HandleResume() {
 }
 
 struct Image {
-	unsigned char * pixels;
+	uint32_t * pixels;//RGBA 8bits
 	uint32_t width, height;
 };
 
@@ -168,9 +168,18 @@ int main() {
 	CNFGSetup("Test Bench", 0, 0);
 
 	struct Image imageIcon = load("icon.png");
+	uint64_t size = imageIcon.width*imageIcon.height;
+	for(int pos = 0; pos < size; pos++) {
+		if((imageIcon.pixels[pos] & 0x000000FF) == 0) {
+			imageIcon.pixels[pos] = 0xFFFFFFFF;
+		}
+	}
+
 	struct Image imageBackground = load("background.png");
 
 	while (1) {
+		keyboard_up = 1;
+
 		int i, pos;
 		float f;
 		iframeno++;
@@ -191,15 +200,26 @@ int main() {
 		UpdateScreenWithBitmapOffsetY = 0;
 		CNFGUpdateScreenWithBitmap(imageBackground.pixels, imageBackground.width, imageBackground.height);
 
+		const int textBoxStartX = 20;
+		const int textBoxEndX = screenx-20;
+		const int textBoxStartY = screeny-120-100;
+		const int textBoxEndY = screeny-20-100;
+
+		// Square behind text
+		CNFGDialogColor = 0xFFFFFF;
+		CNFGDrawBox(textBoxStartX, textBoxStartY, textBoxEndX, textBoxEndY);
+
 		//Green circle
-		UpdateScreenWithBitmapOffsetX = 500;
-		UpdateScreenWithBitmapOffsetY = 500;
+		UpdateScreenWithBitmapOffsetX = textBoxStartX + 15;
+		UpdateScreenWithBitmapOffsetY = textBoxStartY + 10;
 		CNFGUpdateScreenWithBitmap(imageIcon.pixels, imageIcon.width, imageIcon.height);
 		CNFGFlushRender();
 
-		// Square behind text
-		CNFGDialogColor = 0x000000;
-		CNFGDrawBox(0, screeny-96, screenx, screeny);
+		if(((int)OGGetAbsoluteTime()) % 2 == 0) {
+			// Text input line
+			CNFGDialogColor = 0xAAAAAA;
+			CNFGDrawBox(textBoxStartX + 10 + 100 + 10, textBoxStartY + 20 , textBoxStartX + 10 + 100 + 10 + 2, textBoxEndY - 20);
+		}
 
 		frames++;
 		CNFGSwapBuffers();
